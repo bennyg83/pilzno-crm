@@ -35,10 +35,15 @@ jobs:
         cd frontend
         npm install
         
+    - name: Fix vite permissions
+      run: |
+        cd frontend
+        chmod +x node_modules/.bin/vite
+        
     - name: Build frontend
       run: |
         cd frontend
-        ./node_modules/.bin/vite build --base=/pilzno-crm/
+        npx vite build --base=/pilzno-crm/
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
