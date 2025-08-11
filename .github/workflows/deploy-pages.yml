@@ -75,7 +75,7 @@ jobs:
       
     - name: Upload to GitHub Pages
       id: upload
-      uses: actions/upload-pages-artifact@3
+      uses: actions/upload-pages-artifact@v3
       with:
         path: frontend/dist/
         
