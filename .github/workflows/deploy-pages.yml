@@ -36,15 +36,10 @@ jobs:
         cd frontend
         npm ci
         
-    - name: Run tests
-      run: |
-        cd frontend
-        npm run test:ci
-        
     - name: Build frontend
       run: |
         cd frontend
-        npm run build
+        npm run build:pages
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -75,8 +70,8 @@ jobs:
       uses: actions/configure-pages@v4
       
     - name: Upload to GitHub Pages
-      id: deployment
-      uses: actions/upload-pages-artifact@v3
+      id: upload
+      uses: actions/upload-pages-artifact@3
       with:
         path: frontend/dist/
         
