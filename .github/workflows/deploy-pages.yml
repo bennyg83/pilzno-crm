@@ -38,7 +38,7 @@ jobs:
     - name: Build frontend
       run: |
         cd frontend
-        npm run build:pages
+        npx vite build --base=/pilzno-crm/
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
