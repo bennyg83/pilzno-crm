@@ -3,9 +3,9 @@
 // IP: 46.116.134.216
 
 export const BACKEND_CONFIG = {
-  API_BASE_URL: 'https://46.116.134.216:443',
-  WS_URL: 'wss://46.116.134.216:443',
-  HEALTH_CHECK_URL: 'https://46.116.134.216:443/health',
+  API_BASE_URL: 'http://46.116.134.216:8080',
+  WS_URL: 'ws://46.116.134.216:8080',
+  HEALTH_CHECK_URL: 'http://46.116.134.216:8080/health',
   
   // Connection settings
   TIMEOUT: 10000,
@@ -16,8 +16,8 @@ export const BACKEND_CONFIG = {
   ENABLE_REAL_TIME_UPDATES: true,
   
   // Security
-  ALLOW_INSECURE_CONNECTIONS: false, // HTTPS required for production
-  VALIDATE_SSL: true // Validate SSL certificates
+  ALLOW_INSECURE_CONNECTIONS: true, // Allow HTTP for development
+  VALIDATE_SSL: false // No SSL validation needed for HTTP
 };
 
 export default BACKEND_CONFIG;
