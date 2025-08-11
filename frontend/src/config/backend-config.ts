@@ -3,9 +3,9 @@
 // IP: 46.116.134.216
 
 export const BACKEND_CONFIG = {
-  API_BASE_URL: 'https://46.116.134.216:443',
-  WS_URL: 'wss://46.116.134.216:443',
-  HEALTH_CHECK_URL: 'https://46.116.134.216:443/health',
+  API_BASE_URL: 'https://46.116.134.216:8080',
+  WS_URL: 'wss://46.116.134.216:8080',
+  HEALTH_CHECK_URL: 'https://46.116.134.216:8080/health',
   
   // Connection settings
   TIMEOUT: 10000,
