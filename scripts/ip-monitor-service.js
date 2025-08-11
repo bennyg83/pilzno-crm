@@ -14,9 +14,13 @@
  * - Rate limiting protection
  */
 
+const path = require('path');
+
+// Load environment variables from .env file
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 const axios = require('axios');
 const fs = require('fs').promises;
-const path = require('path');
 
 // Configuration
 const CONFIG = {
