@@ -1,5 +1,5 @@
 // Auto-generated backend configuration
-// Last updated: 2025-08-11T12:28:50.852Z
+// Last updated: 2025-08-11T12:28:50.283Z
 // IP: 46.116.134.216
 
 export const BACKEND_CONFIG = {
