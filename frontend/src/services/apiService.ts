@@ -1,7 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import { User, Family, FamilyMember, AuthResponse, RegisterData } from '../types'
+import { BACKEND_CONFIG } from '../config/backend-config'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
+const API_BASE_URL = BACKEND_CONFIG.API_BASE_URL
 
 class ApiService {
   private api: AxiosInstance
