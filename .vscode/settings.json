@@ -1,0 +1,7 @@
+{
+    "terminal.integrated.allowChords": false,
+    "terminal.integrated.automationProfile.windows": {
+        "command": "C:\\Windows\\System32\\cmd.exe",
+        "command": "C:\Program Files\Git\git-bash.exe"
+    }
+}

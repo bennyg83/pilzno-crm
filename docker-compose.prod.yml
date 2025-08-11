@@ -1,0 +1,113 @@
+# Production configuration for Pilzno Synagogue Management System
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+
+services:
+  pilzno-synagogue-db:
+    image: postgres:15-alpine
+    container_name: pilzno-synagogue-db-prod
+    environment:
+      POSTGRES_DB: pilzno_synagogue
+      POSTGRES_USER: synagogue_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-synagogue_secure_pass}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - pilzno-synagogue-db-prod-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - pilzno-synagogue-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synagogue_admin -d pilzno_synagogue"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  pilzno-synagogue-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: pilzno-synagogue-backend-prod
+    environment:
+      DATABASE_URL: postgresql://synagogue_admin:${DB_PASSWORD:-synagogue_secure_pass}@pilzno-synagogue-db:5432/pilzno_synagogue
+      JWT_SECRET: ${JWT_SECRET:-pilzno_synagogue_jwt_secret_key_2024}
+      NODE_ENV: production
+      DB_HOST: pilzno-synagogue-db
+      DB_PORT: 5432
+      DB_USER: synagogue_admin
+      DB_PASSWORD: ${DB_PASSWORD:-synagogue_secure_pass}
+      DB_NAME: pilzno_synagogue
+      PORT: 3001
+    ports:
+      - "${BACKEND_PORT:-3001}:3001"
+    depends_on:
+      pilzno-synagogue-db:
+        condition: service_healthy
+    volumes:
+      - backend_logs_prod:/app/logs
+    networks:
+      - pilzno-synagogue-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  pilzno-synagogue-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: pilzno-synagogue-frontend-prod
+    environment:
+      VITE_API_BASE_URL: ${API_BASE_URL:-http://localhost:3001}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      pilzno-synagogue-backend:
+        condition: service_healthy
+    networks:
+      - pilzno-synagogue-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+volumes:
+  pilzno-synagogue-db-prod-data:
+    driver: local
+  backend_logs_prod:
+    driver: local
+
+networks:
+  pilzno-synagogue-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16 

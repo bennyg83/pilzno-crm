@@ -1,0 +1,39 @@
+{
+  "name": "pilzno-crm-ip-monitor",
+  "version": "1.0.0",
+  "description": "IP monitoring service for Pilzno CRM GitHub Pages deployment",
+  "main": "ip-monitor-service.js",
+  "scripts": {
+    "start": "node ip-monitor-service.js",
+    "dev": "nodemon ip-monitor-service.js",
+    "test": "echo \"No tests specified\" && exit 0",
+    "install-deps": "npm install",
+    "status": "node -e \"const service = require('./ip-monitor-service'); const monitor = new service(); console.log(monitor.getStatus());\""
+  },
+  "keywords": [
+    "ip-monitor",
+    "github-pages",
+    "pilzno-crm",
+    "automation"
+  ],
+  "author": "Pilzno CRM Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/pilzno-crm-backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/pilzno-crm-backend/issues"
+  },
+  "homepage": "https://github.com/your-username/pilzno-crm-backend#readme"
+}

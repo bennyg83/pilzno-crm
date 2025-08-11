@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # Nginx Reverse Proxy (HTTP only)
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: nginx-proxy-simple
+    ports:
+      - "0.0.0.0:8080:80"    # Main HTTP port (router redirects 80→8080)
+    volumes:
+      - ./nginx/simple.conf:/etc/nginx/nginx.conf:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - pilzno-synagogue-frontend
+      - pilzno-synagogue-backend
+    networks:
+      - pilzno-synagogue-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Database
+  pilzno-synagogue-db:
+    image: postgres:15-alpine
+    container_name: pilzno-synagogue-db-simple
+    environment:
+      POSTGRES_DB: pilzno_synagogue
+      POSTGRES_USER: synagogue_admin
+      POSTGRES_PASSWORD: synagogue_secure_pass
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    # No external ports - only accessible through internal network
+    expose:
+      - "5432"
+    volumes:
+      - pilzno-synagogue-db-simple-data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - pilzno-synagogue-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synagogue_admin -d pilzno_synagogue"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Backend (internal only)
+  pilzno-synagogue-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: pilzno-synagogue-backend-simple
+    environment:
+      DATABASE_URL: postgresql://synagogue_admin:synagogue_secure_pass@pilzno-synagogue-db:5432/pilzno_synagogue
+      JWT_SECRET: pilzno_synagogue_jwt_secret_key_2024
+      NODE_ENV: development
+      DB_HOST: pilzno-synagogue-db
+      DB_PORT: 5432
+      DB_USER: synagogue_admin
+      DB_PASSWORD: synagogue_secure_pass
+      DB_NAME: pilzno_synagogue
+      PORT: 3001
+      CORS_ORIGIN: "*"
+    # No external ports - only accessible through Nginx
+    expose:
+      - "3001"
+    depends_on:
+      pilzno-synagogue-db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - backend_logs_simple:/app/logs
+    networks:
+      - pilzno-synagogue-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://0.0.0.0:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Frontend (production build)
+  pilzno-synagogue-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: pilzno-synagogue-frontend-simple
+    environment:
+      # Use external URL for browser access
+      VITE_API_BASE_URL: http://89.138.168.239:8080
+      NODE_ENV: production
+    # No external ports - only accessible through Nginx
+    expose:
+      - "3000"
+    depends_on:
+      pilzno-synagogue-backend:
+        condition: service_healthy
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/dist
+    networks:
+      - pilzno-synagogue-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+volumes:
+  pilzno-synagogue-db-simple-data:
+    driver: local
+  backend_logs_simple:
+    driver: local
+  nginx_logs:
+    driver: local
+
+networks:
+  pilzno-synagogue-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.24.0.0/16
